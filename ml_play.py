@@ -27,9 +27,11 @@ def ml_loop():
     platform_arrived=False
     ball_dir=0
     ball_preposition=-1
-    destination=-1
+    destination=-10
     position=0
     fall=False
+    ball_high=-1
+    a=0
 
 
     # 2. Inform the game process that ml process is ready before start the loop.
@@ -57,10 +59,11 @@ def ml_loop():
         if not ball_served:
             comm.send_instruction(scene_info.frame, PlatformAction.SERVE_TO_LEFT)
             ball_served = True
+
             platform_arrived=False
             ball_dir=0
             ball_preposition=-1
-            destination=-1
+            destination=-10
             position=0
             fall=False
         else:
@@ -81,7 +84,7 @@ def ml_loop():
                 ball_dir=0
                 ball_preposition=-1
 
-            if platform_arrived==False and destination==-1:
+            if platform_arrived==False and destination==-10:
                 if scene_info.ball[1]>=280 and not ball_dir==0:
                     temp=400-scene_info.ball[1]
                     destination=scene_info.ball[0]+ball_dir*temp
@@ -91,21 +94,45 @@ def ml_loop():
                     if destination<0:
                         destination=-destination
             
-            if abs(position-destination)<=5:
+            if abs(position-destination)<=5 and destination>0:
                 platform_arrived=True
-                destination=-1
+                destination=-10
+                print(a)
+                a=a+1
+            
+            if destination<=20 and position==20:
+                platform_arrived=True
+                destination=-10
+                print(a)
+                a=a+1
+            
+            if destination>=180 and position==180:
+                platform_arrived=True
+                destination=-10
             
             if scene_info.ball[1]<270:
-                platform_arrived=False
                 fall=True
-            if scene_info.ball[1]>395:
-                platform_arrived=False
+            
+                
+            if scene_info.ball[1]>390:
+                if ball_high==-1:
+                    ball_high=scene_info.ball[1]
+                    ##print(1)
+                
+            if scene_info.ball[1]>380 and scene_info.ball[1]<390:
+                if ball_high>0 and scene_info.ball[1]<ball_high:
+                    platform_arrived=False   
+                    ##print(2)         
+            if scene_info.ball[1]<360:
+                ball_high=-1
+
 
             if platform_arrived==True:
                 comm.send_instruction(scene_info.frame, PlatformAction.NONE)
 
             else:
-                if destination==-1:
+                if destination==-10:
+                    
                     if position<90:
                         ##print(1)
                         comm.send_instruction(scene_info.frame, PlatformAction.MOVE_RIGHT)
